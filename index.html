@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Carnival of Sins</title>
+
+<!-- PWA -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Carnival of Sins">
+<meta name="theme-color" content="#080808">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23080808'/%3E%3Crect x='8' y='8' width='176' height='176' fill='none' stroke='%23C9A84C' stroke-width='3'/%3E%3Ctext x='96' y='115' text-anchor='middle' font-size='80' fill='%23C9A84C'%3E🎭%3C/text%3E%3Ctext x='96' y='155' text-anchor='middle' font-family='serif' font-size='14' fill='%23C9A84C' letter-spacing='2'%3ESINS%3C/text%3E%3C/svg%3E">
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+:root{--gold:#C9A84C;--gold-light:#F0D080;--gold-dark:#8B6914;--black:#080808;--black2:#111;--white:#F5F0E8;--white-dim:#B8B0A0;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--black);color:var(--white);font-family:'Cinzel',serif;position:fixed;inset:0;display:flex;flex-direction:column;}
+
+/* ── BACKGROUND ── */
+#sinBg{position:fixed;inset:0;z-index:0;opacity:0;transition:opacity 1s;pointer-events:none;background:#040404;overflow:hidden;}
+#sinBg.visible{opacity:1;}
+#sinBg img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:sepia(0.3) contrast(1.1) brightness(0.35) saturate(0.2);}
+#sinBg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,8,8,0.75) 0%,rgba(8,8,8,0.45) 35%,rgba(8,8,8,0.7) 100%);}
+/* gold tint overlay */
+#sinBg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(201,168,76,0.08) 0%,transparent 70%);z-index:1;}
+
+/* ── LAYOUT ── */
+.header{flex-shrink:0;text-align:center;padding:18px 20px 12px;border-bottom:1px solid rgba(201,168,76,0.3);position:relative;background:rgba(8,8,8,0.9);z-index:10;backdrop-filter:blur(8px);}
+.header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:60px;height:2px;background:var(--gold);}
+.header-title{font-family:'Cinzel Decorative',serif;font-size:20px;font-weight:900;color:var(--gold);letter-spacing:2px;text-shadow:0 0 20px rgba(201,168,76,0.5);}
+.header-sub{font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:var(--white-dim);letter-spacing:3px;margin-top:2px;}
+
+.nav{flex-shrink:0;display:flex;border-bottom:1px solid rgba(201,168,76,0.2);background:rgba(8,8,8,0.92);z-index:10;backdrop-filter:blur(8px);}
+.nav-tab{flex:1;padding:11px 4px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--white-dim);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'Cinzel',serif;}
+.nav-tab .ni{font-size:14px;display:block;margin-bottom:1px;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.screens{flex:1;overflow:hidden;position:relative;z-index:2;}
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 40px;}
+.screen.active{display:block;}
+
+/* ── BUTTONS ── */
+.btn{display:block;width:100%;padding:13px 18px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Cinzel',serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none;border-radius:0;transition:background .15s;}
+.btn:active{background:rgba(201,168,76,0.15);}
+.btn-primary{background:rgba(201,168,76,0.12);color:var(--gold-light);border-color:var(--gold);}
+.btn-primary:active{background:rgba(201,168,76,0.28);}
+.btn-danger{border-color:#5a1212;color:#cc4444;}
+.btn-danger:active{background:rgba(139,26,26,0.25);}
+.btn-sm{padding:9px 14px;font-size:10px;}
+.btn-row{display:flex;gap:10px;}.btn-row .btn{flex:1;}
+
+/* ── INPUTS ── */
+.input-group{margin-bottom:12px;}
+.input-label{font-size:9px;letter-spacing:3px;color:var(--gold-dark);text-transform:uppercase;margin-bottom:5px;display:block;}
+.input-field{width:100%;padding:11px 13px;background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-bottom-color:var(--gold-dark);color:var(--white);font-family:'Cinzel',serif;font-size:14px;outline:none;-webkit-appearance:none;border-radius:0;transition:border-color .2s;}
+.input-field:focus{border-bottom-color:var(--gold);}
+
+/* ── GLASS CARD ── */
+.card{background:rgba(8,8,8,0.78);border:1px solid rgba(201,168,76,0.22);padding:14px 13px;margin-bottom:12px;backdrop-filter:blur(6px);}
+.card-l{border-left:2px solid var(--gold);}
+
+/* ── ROUNDS ── */
+.round-row{display:flex;justify-content:center;gap:5px;margin-bottom:14px;}
+.rdot{width:30px;height:30px;border:1px solid rgba(201,168,76,0.22);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--white-dim);transition:all .35s;position:relative;flex-shrink:0;background:rgba(0,0,0,0.5);}
+.rdot.done{border-color:var(--gold);background:rgba(201,168,76,0.18);color:var(--gold);}
+.rdot.cur{border-color:var(--gold);color:var(--gold);box-shadow:0 0 14px rgba(201,168,76,0.55);}
+.rdot.cur::after{content:'';position:absolute;inset:-4px;border:1px solid rgba(201,168,76,0.4);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0;transform:scale(1.35);}}
+
+/* ── SIN DISPLAY ── */
+.sin-display{text-align:center;margin-bottom:12px;padding:6px 0;}
+.sin-icon-lg{font-size:26px;line-height:1;margin-bottom:3px;filter:drop-shadow(0 0 8px rgba(201,168,76,0.7));}
+.sin-name-lg{font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);text-shadow:0 0 16px rgba(201,168,76,0.6);}
+.sin-latin{font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:var(--white-dim);letter-spacing:2px;}
+
+/* ── PLAYER ROW ── */
+.prow{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(8,8,8,0.78);border:1px solid rgba(201,168,76,0.14);margin-bottom:8px;backdrop-filter:blur(6px);transition:border-color .2s;}
+.prow.editing{border-color:var(--gold);}
+.pavatar{width:34px;height:34px;border:1px solid var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold);background:rgba(201,168,76,0.06);flex-shrink:0;font-family:'Cinzel Decorative',serif;}
+.pinfo{flex:1;min-width:0;}
+.pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ptotal{font-size:10px;color:var(--white-dim);letter-spacing:.8px;margin-top:1px;}
+.score-wrap{display:flex;align-items:center;gap:6px;}
+.score-inp{width:62px;padding:7px 6px;background:rgba(8,8,8,0.88);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:'Cinzel',serif;font-size:17px;font-weight:700;text-align:center;outline:none;-webkit-appearance:none;border-radius:0;}
+.score-inp:focus{border-color:var(--gold);background:rgba(201,168,76,0.07);}
+.score-ok{width:34px;height:34px;background:var(--gold);border:none;color:var(--black);font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.score-ok:active{background:var(--gold-light);transform:scale(.93);}
+
+/* ── SCOREBOARD ── */
+.sb{background:rgba(0,0,0,0.65);border:1px solid rgba(201,168,76,0.18);margin-bottom:14px;backdrop-filter:blur(4px);}
+.sb-head{background:rgba(201,168,76,0.07);padding:7px 11px;display:flex;border-bottom:1px solid rgba(201,168,76,0.14);}
+.sb-pc{flex:1;font-size:9px;letter-spacing:2px;color:var(--gold-dark);text-transform:uppercase;}
+.sb-rc{display:flex;}
+.sb-rh{width:30px;text-align:center;font-size:8px;color:var(--gold-dark);}
+.sb-th{width:44px;text-align:right;font-size:9px;color:var(--gold);}
+.sb-row{display:flex;align-items:center;padding:8px 11px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.sb-row:last-child{border-bottom:none;}
+.sb-row.leader{background:rgba(201,168,76,0.05);}
+.sb-pn{flex:1;font-size:11px;}
+.sb-scores{display:flex;}
+.sb-sc{width:30px;text-align:center;font-size:10px;color:rgba(255,255,255,0.25);}
+.sb-sc.filled{color:var(--white-dim);}
+.sb-sc.cur{color:var(--gold);font-weight:700;}
+.sb-tot{width:44px;text-align:right;font-size:14px;font-weight:700;color:var(--gold);}
+
+/* ── TEAMS ── */
+.team-item{display:flex;align-items:center;justify-content:space-between;padding:13px 13px;background:rgba(255,255,255,0.02);border:1px solid rgba(201,168,76,0.12);margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.team-item:active,.team-item.selected{background:rgba(201,168,76,0.07);border-color:var(--gold);}
+.team-nm{font-size:15px;font-weight:600;}
+.team-meta{font-size:10px;color:var(--white-dim);margin-top:2px;}
+.team-badge{font-size:10px;color:var(--gold-dark);text-align:right;line-height:1.6;}
+
+/* ── STATS ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.stat-box{background:rgba(255,255,255,0.02);border:1px solid rgba(201,168,76,0.12);padding:12px 10px;text-align:center;}
+.stat-val{font-size:22px;font-weight:700;color:var(--gold);}
+.stat-lbl{font-size:8px;letter-spacing:2px;color:var(--white-dim);text-transform:uppercase;margin-top:3px;}
+.hist-item{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;color:var(--white-dim);}
+.hist-win{color:var(--gold);font-weight:600;}
+
+/* ── PLAYER TAG ── */
+.ptag{display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid rgba(201,168,76,0.15);margin-bottom:7px;}
+.ptag-name{flex:1;font-size:13px;}
+.ptag-rm{width:26px;height:26px;background:rgba(139,26,26,0.3);border:none;color:#cc4444;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;align-items:flex-end;}
+.modal-overlay.open{display:flex;}
+.modal{width:100%;background:var(--black2);border-top:2px solid var(--gold);padding:20px 16px 36px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--gold);margin-bottom:3px;}
+.modal-sub{font-size:11px;color:var(--white-dim);margin-bottom:16px;font-family:'IM Fell English',serif;font-style:italic;}
+
+/* ── RESULTS ── */
+.winner-block{text-align:center;padding:14px 0 10px;}
+.winner-crown{font-size:34px;margin-bottom:6px;}
+.winner-lbl{font-size:9px;letter-spacing:4px;color:var(--gold-dark);text-transform:uppercase;margin-bottom:4px;}
+.winner-nm{font-family:'Cinzel Decorative',serif;font-size:21px;color:var(--gold);text-shadow:0 0 18px rgba(201,168,76,0.5);}
+.winner-sc{font-size:13px;color:var(--white-dim);margin-top:3px;}
+.res-row{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.res-rank{width:26px;font-size:11px;color:var(--white-dim);}
+.res-name{flex:1;font-size:14px;}
+.res-tot{font-size:18px;font-weight:700;color:var(--gold);}
+
+/* ── MISC ── */
+.divider{display:flex;align-items:center;gap:8px;margin:13px 0;color:var(--gold-dark);font-size:10px;letter-spacing:3px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,var(--gold-dark),transparent);}
+.orn{color:var(--gold-dark);text-align:center;font-size:13px;margin:5px 0;letter-spacing:6px;}
+.sec-title{font-family:'Cinzel Decorative',serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:12px;}
+.empty{text-align:center;padding:40px 20px;color:var(--white-dim);font-family:'IM Fell English',serif;font-style:italic;font-size:14px;}
+.empty::before{content:'☽';display:block;font-size:26px;margin-bottom:10px;opacity:.25;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--gold);color:var(--black);padding:9px 22px;font-size:11px;font-weight:700;letter-spacing:2px;z-index:300;transition:transform .3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── PWA INSTALL BANNER ── */
+#installBanner{display:none;background:rgba(201,168,76,0.12);border-bottom:1px solid rgba(201,168,76,0.25);padding:10px 14px;align-items:center;gap:10px;z-index:15;flex-shrink:0;}
+#installBanner.show{display:flex;}
+#installBanner .ib-text{flex:1;font-size:10px;color:var(--white-dim);line-height:1.4;}
+#installBanner .ib-text strong{color:var(--gold);display:block;font-size:11px;margin-bottom:1px;}
+#installBanner .ib-btn{padding:8px 14px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Cinzel',serif;font-size:10px;cursor:pointer;white-space:nowrap;}
+#installBanner .ib-close{width:22px;height:22px;background:none;border:none;color:var(--white-dim);font-size:18px;cursor:pointer;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- Real Bruegel engravings background (public domain) -->
+<div id="sinBg"><img id="sinImg" src="" alt="" loading="lazy"></div>
+
+<div class="header">
+  <div class="header-title">Carnival of Sins</div>
+  <div class="header-sub">⚜ Livre des Péchés ⚜</div>
+</div>
+
+<!-- PWA install banner (Android Chrome) -->
+<div id="installBanner">
+  <div class="ib-text"><strong>📲 Ajouter à l'écran d'accueil</strong>Accédez à l'app comme un jeu natif</div>
+  <button class="ib-btn" id="installBtn">Installer</button>
+  <button class="ib-close" onclick="document.getElementById('installBanner').classList.remove('show')">×</button>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" data-tab="game" onclick="switchTab('game')"><span class="ni">🎭</span>Partie</div>
+  <div class="nav-tab" data-tab="teams" onclick="switchTab('teams')"><span class="ni">⚔️</span>Équipes</div>
+  <div class="nav-tab" data-tab="stats" onclick="switchTab('stats')"><span class="ni">📜</span>Archives</div>
+</div>
+
+<div class="screens">
+  <div class="screen active" id="tab-game"><div id="gameContent"></div></div>
+  <div class="screen" id="tab-teams"><div id="teamsContent"></div></div>
+  <div class="screen" id="tab-stats"><div id="statsContent"></div></div>
+</div>
+
+<!-- MODAL: New Team -->
+<div class="modal-overlay" id="modalNewTeam">
+  <div class="modal">
+    <div class="modal-title">Nouvelle Équipe</div>
+    <div class="modal-sub">Nommez votre confrérie de pécheurs</div>
+    <div class="input-group">
+      <label class="input-label">Nom de l'équipe</label>
+      <input type="text" class="input-field" id="newTeamName" placeholder="Les Damnés...">
+    </div>
+    <div class="divider">Joueurs (2 à 4)</div>
+    <div id="newPlayerList"></div>
+    <div id="addPlayerRow">
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <input type="text" class="input-field" id="newPlayerInput" placeholder="Nom du joueur..." style="flex:1" onkeydown="if(event.key==='Enter')addNewPlayer()">
+        <button class="btn btn-sm" style="width:auto;padding:11px 16px" onclick="addNewPlayer()">+</button>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn" onclick="closeModal('modalNewTeam')">Annuler</button>
+      <button class="btn btn-primary" onclick="createTeam()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirm -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal">
+    <div class="modal-title">Confirmation</div>
+    <div class="modal-sub" id="confirmMsg"></div>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn" onclick="closeModal('modalConfirm')">Annuler</button>
+      <button class="btn btn-danger" id="confirmBtn">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Results -->
+<div class="modal-overlay" id="modalResults">
+  <div class="modal">
+    <div style="text-align:center;margin-bottom:12px">
+      <div class="orn">✦ ✦ ✦</div>
+      <div class="modal-title" style="font-size:17px">Fin de Partie</div>
+      <div class="modal-sub">Les pécheurs sont jugés</div>
+    </div>
+    <div id="resultsContent"></div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" onclick="playAgain()">⚔ Rejouer</button>
+      <button class="btn" onclick="closeModal('modalResults')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── BRUEGEL PUBLIC DOMAIN ENGRAVINGS (Wikimedia Commons) ──────────────────
+// Full series: 7 Deadly Sins by Pieter Bruegel the Elder / van der Heyden, 1558
+// All public domain, hosted on upload.wikimedia.org
+const SIN_IMAGES = [
+  // 0 Orgueil / Pride - Superbia
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Pride.JPG/800px-Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Pride.JPG',
+  // 1 Avarice / Greed - Avaritia
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Avarice.JPG/800px-Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Avarice.JPG',
+  // 2 Luxure / Lust - Luxuria
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Lechery.JPG/800px-Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Lechery.JPG',
+  // 3 Envie / Envy - Invidia
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Envy_%28Invidia%29_from_The_Seven_Deadly_Sins_MET_DP818309.jpg/800px-Envy_%28Invidia%29_from_The_Seven_Deadly_Sins_MET_DP818309.jpg',
+  // 4 Gourmandise / Gluttony - Gula
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Gluttony.JPG/800px-Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Gluttony.JPG',
+  // 5 Colère / Wrath - Ira
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Anger.JPG/800px-Pieter_Bruegel_the_Elder-_The_Seven_Deadly_Sins_or_the_Seven_Vices_-_Anger.JPG',
+  // 6 Paresse / Sloth - Acedia
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Sloth_%28Desidia%29%2C_from_the_series_The_Seven_Deadly_Sins_MET_DP818263.jpg/800px-Sloth_%28Desidia%29%2C_from_the_series_The_Seven_Deadly_Sins_MET_DP818263.jpg'
+];
+
+const SINS=[
+  {name:'Orgueil',latin:'Superbia',icon:'👑'},
+  {name:'Avarice',latin:'Avaritia',icon:'💰'},
+  {name:'Luxure',latin:'Luxuria',icon:'🌹'},
+  {name:'Envie',latin:'Invidia',icon:'🐍'},
+  {name:'Gourmandise',latin:'Gula',icon:'🍷'},
+  {name:'Colère',latin:'Ira',icon:'🔥'},
+  {name:'Paresse',latin:'Acedia',icon:'🌙'},
+];
+
+let state={teams:[],activeTeamId:null,currentGame:null};
+let tempPlayers=[];
+
+function save(){try{localStorage.setItem('cos_v4',JSON.stringify(state));}catch(e){}}
+function load(){try{const s=localStorage.getItem('cos_v4');if(s)state=JSON.parse(s);}catch(e){}}
+
+load();
+
+// Preload all images
+SIN_IMAGES.forEach(u=>{const i=new Image();i.src=u;});
+
+renderAll();
+
+// ── PWA Install ──────────────────────────────────────────────────────────
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('installBanner').classList.add('show');
+});
+document.getElementById('installBtn').addEventListener('click',async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  const{outcome}=await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  document.getElementById('installBanner').classList.remove('show');
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+// ── BACKGROUND ──────────────────────────────────────────────────────────
+function showBg(idx){
+  const bg=document.getElementById('sinBg');
+  const img=document.getElementById('sinImg');
+  img.src=SIN_IMAGES[idx]||'';
+  bg.classList.add('visible');
+}
+function hideBg(){
+  const bg=document.getElementById('sinBg');
+  bg.classList.remove('visible');
+  setTimeout(()=>{if(!bg.classList.contains('visible'))document.getElementById('sinImg').src='';},1100);
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelector('[data-tab="'+tab+'"]').classList.add('active');
+  if(tab==='game')renderGame();
+  else{hideBg();if(tab==='teams')renderTeams();if(tab==='stats')renderStats();}
+}
+
+// ── GAME ──────────────────────────────────────────────────────────────────
+function renderAll(){renderGame();renderTeams();renderStats();}
+
+function renderGame(){
+  const el=document.getElementById('gameContent');
+  const team=getActiveTeam();
+  if(!team){
+    hideBg();
+    el.innerHTML=`<div class="empty">Aucune équipe active.<br>Créez ou sélectionnez une équipe<br>dans l'onglet <strong style="color:var(--gold)">Équipes</strong>.</div>`;
+    return;
+  }
+  const game=state.currentGame;
+  if(!game){
+    hideBg();
+    el.innerHTML=`<div class="card card-l"><div style="font-size:9px;letter-spacing:2px;color:var(--gold-dark);margin-bottom:5px">ÉQUIPE ACTIVE</div><div style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:4px">${team.name}</div><div style="font-size:11px;color:var(--white-dim)">${team.players.join(' · ')}</div></div><div class="orn">✦ ✦ ✦</div><div style="text-align:center;padding:20px 0 10px"><div style="font-family:'IM Fell English',serif;font-style:italic;color:var(--white-dim);font-size:13px;margin-bottom:20px">Sept péchés vous attendent...<br>Que la damnation commence.</div><button class="btn btn-primary" onclick="startGame()">🎭 Commencer la Partie</button></div>`;
+    return;
+  }
+  const round=game.round;
+  showBg(round);
+  const sin=SINS[round];
+  const scores=game.scores;
+  const totals=team.players.map((_,pi)=>scores.reduce((s,r)=>s+(r&&r[pi]!=null?Number(r[pi]):0),0));
+  const dots=SINS.map((_,i)=>`<div class="rdot ${i<round?'done':i===round?'cur':''}">${i<round?'✓':i+1}</div>`).join('');
+  const cr=scores[round]||[];
+  const inputs=team.players.map((name,pi)=>{
+    const val=cr[pi]!=null&&cr[pi]!==undefined?cr[pi]:'';
+    return `<div class="prow" id="prow-${pi}"><div class="pavatar">${name.charAt(0).toUpperCase()}</div><div class="pinfo"><div class="pname">${name}</div><div class="ptotal" id="ptot-${pi}">Total : ${totals[pi]} pts</div></div><div class="score-wrap"><input type="number" inputmode="numeric" pattern="[0-9]*" class="score-inp" id="sinp-${pi}" value="${val}" placeholder="0" onkeydown="if(event.key==='Enter'){this.blur();confirmScore(${pi});}" onfocus="document.getElementById('prow-${pi}').classList.add('editing')" onblur="document.getElementById('prow-${pi}').classList.remove('editing')"><button class="score-ok" onclick="confirmScore(${pi})">✓</button></div></div>`;
+  }).join('');
+  const sbHead=`<div class="sb-head"><div class="sb-pc">Joueur</div><div class="sb-rc">${SINS.map((_,i)=>`<div class="sb-rh">M${i+1}</div>`).join('')}</div><div class="sb-th">Total</div></div>`;
+  const sbRows=team.players.map((name,pi)=>{
+    const isL=totals[pi]===Math.max(...totals)&&totals[pi]>0;
+    const cells=SINS.map((_,ri)=>{const v=scores[ri]&&scores[ri][pi]!=null?scores[ri][pi]:'·';const c=ri===round?'cur':(scores[ri]&&scores[ri][pi]!=null?'filled':'');return `<div class="sb-sc ${c}">${v}</div>`;}).join('');
+    return `<div class="sb-row ${isL?'leader':''}"><div class="sb-pn">${isL?'👑 ':''}${name}</div><div class="sb-scores">${cells}</div><div class="sb-tot">${totals[pi]}</div></div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="round-row">${dots}</div>
+    <div class="sin-display">
+      <div class="sin-icon-lg">${sin.icon}</div>
+      <div class="sin-name-lg">${sin.name}</div>
+      <div class="sin-latin">${sin.latin}</div>
+    </div>
+    ${inputs}
+    <button class="btn btn-primary" onclick="nextRound()" style="margin:10px 0 14px">
+      ${round<6?'→ Manche Suivante':'⚡ Terminer la Partie'}
+    </button>
+    <div class="sb">${sbHead}${sbRows}</div>
+    <div class="divider">Options</div>
+    <button class="btn btn-sm btn-danger" onclick="askConfirm('Abandonner la partie en cours ?<br>Aucun score ne sera sauvegardé.',abandonGame)">✕ Abandonner la partie</button>
+  `;
+}
+
+function startGame(){
+  const team=getActiveTeam();if(!team)return;
+  state.currentGame={teamId:team.id,round:0,scores:Array(7).fill(null).map(()=>[])};
+  save();renderGame();
+}
+
+function confirmScore(pi){
+  const inp=document.getElementById('sinp-'+pi);
+  const num=parseInt(inp.value);
+  if(isNaN(num)||num<0){showToast('Score invalide');return;}
+  const r=state.currentGame.round;
+  if(!state.currentGame.scores[r])state.currentGame.scores[r]=[];
+  state.currentGame.scores[r][pi]=num;
+  save();
+  const team=getActiveTeam();
+  const tot=team.players.map((_,pi2)=>state.currentGame.scores.reduce((s,row)=>s+(row&&row[pi2]!=null?Number(row[pi2]):0),0));
+  const te=document.getElementById('ptot-'+pi);
+  if(te)te.textContent='Total : '+tot[pi]+' pts';
+  showToast('Score enregistré ✓');
+}
+
+function nextRound(){
+  const team=getActiveTeam();const game=state.currentGame;if(!game)return;
+  team.players.forEach((_,pi)=>{
+    const inp=document.getElementById('sinp-'+pi);
+    if(inp){const v=parseInt(inp.value);if(!isNaN(v)&&v>=0){
+      if(!game.scores[game.round])game.scores[game.round]=[];
+      if(game.scores[game.round][pi]==null)game.scores[game.round][pi]=v;
+    }}
+  });
+  if(game.round<6){game.round++;save();renderGame();}
+  else finishGame();
+}
+
+function finishGame(){
+  const team=getActiveTeam();const game=state.currentGame;
+  const totals=team.players.map((_,pi)=>game.scores.reduce((s,r)=>s+(r&&r[pi]!=null?Number(r[pi]):0),0));
+  const maxScore=Math.max(...totals);
+  const winnerName=team.players[totals.indexOf(maxScore)];
+  if(!team.stats)team.stats={games:0,wins:{},bestScore:0,history:[]};
+  team.stats.games++;
+  team.players.forEach(p=>{if(!team.stats.wins[p])team.stats.wins[p]=0;});
+  team.stats.wins[winnerName]=(team.stats.wins[winnerName]||0)+1;
+  if(maxScore>(team.stats.bestScore||0))team.stats.bestScore=maxScore;
+  team.stats.history.unshift({date:new Date().toLocaleDateString('fr-FR'),winner:winnerName,scores:team.players.map((p,i)=>({name:p,score:totals[i]}))});
+  if(team.stats.history.length>20)team.stats.history.pop();
+  state.currentGame=null;save();
+  const sorted=[...team.players.map((p,i)=>({name:p,score:totals[i]}))].sort((a,b)=>b.score-a.score);
+  const medals=['🥇','🥈','🥉','4️⃣'];
+  let html=`<div class="winner-block"><div class="winner-crown">👑</div><div class="winner-lbl">Vainqueur</div><div class="winner-nm">${winnerName}</div><div class="winner-sc">${maxScore} points</div></div><div class="orn">✦ ✦ ✦</div>`;
+  sorted.forEach((p,i)=>{html+=`<div class="res-row"><div class="res-rank">${medals[i]||''}</div><div class="res-name">${p.name}</div><div class="res-tot">${p.score}</div></div>`;});
+  document.getElementById('resultsContent').innerHTML=html;
+  document.getElementById('modalResults').classList.add('open');
+  hideBg();renderGame();renderStats();
+}
+
+function playAgain(){closeModal('modalResults');startGame();switchTab('game');}
+function abandonGame(){state.currentGame=null;save();hideBg();renderGame();}
+
+// ── TEAMS ──────────────────────────────────────────────────────────────────
+function renderTeams(){
+  const el=document.getElementById('teamsContent');
+  const active=getActiveTeam();
+  const list=state.teams.length===0
+    ?`<div class="empty">Aucune équipe.<br>Créez votre première confrérie.</div>`
+    :state.teams.map(t=>`<div class="team-item ${active&&active.id===t.id?'selected':''}" onclick="selectTeam('${t.id}')"><div><div class="team-nm">${active&&active.id===t.id?'⚜ ':''}${t.name}</div><div class="team-meta">${t.players.join(' · ')}</div></div><div class="team-badge">${t.stats?t.stats.games+' parties<br>'+(t.stats.bestScore||0)+' pts max':'Aucune partie'}</div></div>`).join('');
+  el.innerHTML=`<div class="sec-title">⚔️ Équipes</div>${list}<div style="margin-top:14px"><button class="btn btn-primary" onclick="openModal('modalNewTeam')">+ Nouvelle Équipe</button></div>${active?`<div class="divider">Zone Danger</div><button class="btn btn-sm btn-danger" onclick="deleteActiveTeam()">✕ Supprimer l'équipe active</button>`:''}<div style="height:20px"></div>`;
+}
+
+function selectTeam(id){
+  if(state.currentGame){showToast('Terminez la partie en cours');return;}
+  state.activeTeamId=id;save();renderTeams();renderGame();
+}
+
+function deleteActiveTeam(){
+  const team=getActiveTeam();
+  if(!team){showToast('Aucune équipe active');return;}
+  askConfirm('Supprimer l\'équipe "<strong>'+team.name+'</strong>" et tout son historique ?',function(){
+    state.teams=state.teams.filter(function(t){return t.id!==state.activeTeamId;});
+    state.activeTeamId=state.teams.length>0?state.teams[0].id:null;
+    save();renderTeams();renderGame();showToast('Équipe supprimée');
+  });
+}
+
+// ── MODALS ──────────────────────────────────────────────────────────────────
+function openModal(id){
+  if(id==='modalNewTeam'){tempPlayers=[];renderPlayerList();document.getElementById('newTeamName').value='';}
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});
+});
+
+function addNewPlayer(){
+  const inp=document.getElementById('newPlayerInput');const name=inp.value.trim();if(!name)return;
+  if(tempPlayers.length>=4){showToast('Maximum 4 joueurs');return;}
+  if(tempPlayers.includes(name)){showToast('Nom déjà utilisé');return;}
+  tempPlayers.push(name);inp.value='';renderPlayerList();inp.focus();
+}
+function removePlayer(i){tempPlayers.splice(i,1);renderPlayerList();}
+function renderPlayerList(){
+  document.getElementById('newPlayerList').innerHTML=tempPlayers.map(function(p,i){return '<div class="ptag"><div class="pavatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0">'+p.charAt(0)+'</div><div class="ptag-name">'+p+'</div><button class="ptag-rm" onclick="removePlayer('+i+')">×</button></div>';}).join('');
+  const ar=document.getElementById('addPlayerRow');if(ar)ar.style.display=tempPlayers.length>=4?'none':'block';
+}
+function createTeam(){
+  const name=document.getElementById('newTeamName').value.trim();
+  if(!name){showToast('Nommez votre équipe');return;}
+  if(tempPlayers.length<2){showToast('Minimum 2 joueurs');return;}
+  const team={id:'t_'+Date.now(),name:name,players:[...tempPlayers],stats:{games:0,wins:{},bestScore:0,history:[]}};
+  state.teams.push(team);state.activeTeamId=team.id;
+  save();closeModal('modalNewTeam');renderTeams();renderGame();showToast('Équipe créée ✓');
+}
+
+// ── CONFIRM (robust: clones button to clear old listeners) ─────────────────
+function askConfirm(msg,action){
+  document.getElementById('confirmMsg').innerHTML=msg;
+  var oldBtn=document.getElementById('confirmBtn');
+  var newBtn=oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn,oldBtn);
+  newBtn.addEventListener('click',function(){
+    closeModal('modalConfirm');
+    action();
+  });
+  openModal('modalConfirm');
+}
+
+// ── STATS ──────────────────────────────────────────────────────────────────
+function renderStats(){
+  const el=document.getElementById('statsContent');
+  const team=getActiveTeam();
+  if(!team){el.innerHTML='<div class="empty">Sélectionnez une équipe pour voir ses archives.</div>';return;}
+  const stats=team.stats||{games:0,wins:{},bestScore:0,history:[]};
+  const wins=stats.wins||{};
+  const topW=Object.entries(wins).sort(function(a,b){return b[1]-a[1];})[0];
+  const histHtml=(stats.history||[]).length===0
+    ?'<div style="color:var(--white-dim);font-style:italic;padding:12px;text-align:center">Aucune partie jouée</div>'
+    :stats.history.map(function(h){return '<div class="hist-item">'+h.date+' — <span class="hist-win">👑 '+h.winner+'</span> · '+h.scores.map(function(s){return s.name+': '+s.score;}).join(', ')+'</div>';}).join('');
+  const winsHtml=team.players.map(function(p){const w=wins[p]||0;return '<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="font-size:12px">'+p+'</span><span style="color:var(--gold);font-weight:700">'+w+' victoire'+(w>1?'s':'')+'</span></div>';}).join('');
+  el.innerHTML='<div class="sec-title">📜 Archives — '+team.name+'</div>'
+    +'<div class="stat-grid"><div class="stat-box"><div class="stat-val">'+(stats.games||0)+'</div><div class="stat-lbl">Parties jouées</div></div><div class="stat-box"><div class="stat-val">'+(stats.bestScore||0)+'</div><div class="stat-lbl">Meilleur score</div></div><div class="stat-box"><div class="stat-val">'+(topW?topW[0].split(' ')[0]:'—')+'</div><div class="stat-lbl">Plus victorieux</div></div><div class="stat-box"><div class="stat-val">'+(topW?topW[1]:0)+'</div><div class="stat-lbl">Victoires max</div></div></div>'
+    +'<div style="font-size:9px;letter-spacing:2px;color:var(--gold-dark);text-transform:uppercase;margin-bottom:7px">Victoires par joueur</div>'
+    +'<div class="sb" style="margin-bottom:14px">'+winsHtml+'</div>'
+    +'<div style="font-size:9px;letter-spacing:2px;color:var(--gold-dark);text-transform:uppercase;margin-bottom:7px">Historique</div>'
+    +'<div class="sb">'+histHtml+'</div>'
+    +'<div class="divider">Zone Danger</div>'
+    +'<button class="btn btn-sm btn-danger" onclick="resetTeamStats()">✕ Réinitialiser les statistiques</button>'
+    +'<div style="height:20px"></div>';
+}
+
+function resetTeamStats(){
+  const team=getActiveTeam();if(!team)return;
+  askConfirm('Effacer tout l\'historique de "<strong>'+team.name+'</strong>" ?',function(){
+    team.stats={games:0,wins:{},bestScore:0,history:[]};
+    save();renderStats();showToast('Statistiques effacées');
+  });
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function getActiveTeam(){return state.teams.find(function(t){return t.id===state.activeTeamId;})||null;}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2200);
+}
+</script>
+
+<!-- Service Worker for offline PWA -->
+<script>
+if('serviceWorker' in navigator){
+  const sw=`
+    const CACHE='cos-v1';
+    const ASSETS=['./'];
+    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+    self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('./')))));
+  `;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  const swURL=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swURL).catch(()=>{});
+}
+</script>
+</body>
+</html>
